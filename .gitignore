@@ -1,0 +1,22 @@
+# SWI-Prolog generated files
+*.qlf
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# Editor settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build/output folders
+build/
+dist/
