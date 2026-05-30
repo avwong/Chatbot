@@ -1,3 +1,7 @@
+:- dynamic concepto/2.
+:- dynamic es_un/2.
+:- dynamic relacion/3.
+:- dynamic sinonimo/2.
 :- dynamic aprendido_concepto/2.
 :- dynamic aprendido_es_un/2.
 :- dynamic aprendido_relacion/3.
@@ -8,6 +12,10 @@ concepto_total(X, D) :- aprendido_concepto(X, D).
 
 es_un_total(X, Y) :- es_un(X, Y).
 es_un_total(X, Y) :- aprendido_es_un(X, Y).
+es_un_total(X, Y) :-
+    (es_un(X, Z) ; aprendido_es_un(X, Z)),
+    Z \== X,
+    es_un_total(Z, Y).
 
 relacion_total(X, R, Y) :- relacion(X, R, Y).
 relacion_total(X, R, Y) :- aprendido_relacion(X, R, Y).
@@ -18,3 +26,7 @@ sinonimo_total(X, Y) :- aprendido_sinonimo(X, Y).
 equivalente(X, X).
 equivalente(X, Y) :- sinonimo_total(X, Y).
 equivalente(X, Y) :- sinonimo_total(Y, X).
+equivalente(X, Y) :-
+    sinonimo_total(X, Z),
+    Z \== X,
+    equivalente(Z, Y).
