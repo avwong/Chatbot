@@ -1,3 +1,5 @@
+:- multifile responder/1.
+
 responder(aprender_concepto(X, D)) :-
     assertz(aprendido_concepto(X, D)),
     guardar_aprendido,
