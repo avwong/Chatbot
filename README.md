@@ -1,2 +1,5 @@
-# Chatbot
-Desarrollo de un chatbot inteligente utilizando el lenguaje Prolog
+# Proyecto 3 - Chatbot Inteligente con Programación Lógica
+
+## Ejecutar
+```bash
+swipl app/main.pl
