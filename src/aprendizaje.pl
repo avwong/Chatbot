@@ -32,6 +32,7 @@ aprender_concepto(Termino, _) :-
 
 aprender_concepto(Termino, Definicion) :-
     assertz(aprendido_concepto(Termino, Definicion)),
+    guardar_aprendido,
     write('Concepto aprendido correctamente.'),
     nl.
 
@@ -42,6 +43,7 @@ aprender_es_un(Elemento, Categoria) :-
 
 aprender_es_un(Elemento, Categoria) :-
     assertz(aprendido_es_un(Elemento, Categoria)),
+    guardar_aprendido,
     write('Clasificacion aprendida correctamente.'),
     nl.
 
@@ -52,6 +54,7 @@ aprender_relacion(A, Relacion, B) :-
 
 aprender_relacion(A, Relacion, B) :-
     assertz(aprendido_relacion(A, Relacion, B)),
+    guardar_aprendido,
     write('Relacion aprendida correctamente.'),
     nl.
 
