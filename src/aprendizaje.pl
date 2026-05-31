@@ -1,28 +1,15 @@
-:- dynamic aprendido_concepto/2.
-:- dynamic aprendido_es_un/2.
-:- dynamic aprendido_relacion/3.
-
 % ---------------------------------
 % Verificaciones de conocimiento
 % ---------------------------------
 
 existe_concepto(Termino) :-
-    aprendido_concepto(Termino, _), !.
-existe_concepto(Termino) :-
-    current_predicate(concepto/2),
-    concepto(Termino, _).
+    concepto_total(Termino, _), !.
 
 existe_clasificacion(Elemento, Categoria) :-
-    aprendido_es_un(Elemento, Categoria), !.
-existe_clasificacion(Elemento, Categoria) :-
-    current_predicate(es_un/2),
-    es_un(Elemento, Categoria).
+    es_un_total(Elemento, Categoria), !.
 
 existe_relacion(A, Relacion, B) :-
-    aprendido_relacion(A, Relacion, B), !.
-existe_relacion(A, Relacion, B) :-
-    current_predicate(relacion/3),
-    relacion(A, Relacion, B).
+    relacion_total(A, Relacion, B), !.
 
 % ---------------------------------
 % Mensaje base cuando no sabe algo
@@ -42,6 +29,7 @@ aprender_concepto(Termino, _) :-
     existe_concepto(Termino),
     write('Ese concepto ya existe en la base de conocimiento.'),
     nl, !.
+
 aprender_concepto(Termino, Definicion) :-
     assertz(aprendido_concepto(Termino, Definicion)),
     write('Concepto aprendido correctamente.'),
@@ -51,6 +39,7 @@ aprender_es_un(Elemento, Categoria) :-
     existe_clasificacion(Elemento, Categoria),
     write('Esa clasificacion ya existe en la base de conocimiento.'),
     nl, !.
+
 aprender_es_un(Elemento, Categoria) :-
     assertz(aprendido_es_un(Elemento, Categoria)),
     write('Clasificacion aprendida correctamente.'),
@@ -60,10 +49,24 @@ aprender_relacion(A, Relacion, B) :-
     existe_relacion(A, Relacion, B),
     write('Esa relacion ya existe en la base de conocimiento.'),
     nl, !.
+
 aprender_relacion(A, Relacion, B) :-
     assertz(aprendido_relacion(A, Relacion, B)),
     write('Relacion aprendida correctamente.'),
     nl.
+
+% ---------------------------------
+% Integracion con conversacion
+% ---------------------------------
+
+responder(aprender_concepto(Termino, Definicion)) :-
+    aprender_concepto(Termino, Definicion), !.
+
+responder(aprender_es_un(Elemento, Categoria)) :-
+    aprender_es_un(Elemento, Categoria), !.
+
+responder(aprender_relacion(A, Relacion, B)) :-
+    aprender_relacion(A, Relacion, B), !.
 
 % ---------------------------------
 % Aprendizaje interactivo
@@ -81,6 +84,7 @@ aprender_concepto_interactivo(Termino) :-
 procesar_concepto(_, cancelar) :-
     write('Aprendizaje cancelado.'),
     nl, !.
+
 procesar_concepto(Termino, Definicion) :-
     aprender_concepto(Termino, Definicion).
 
@@ -96,6 +100,7 @@ aprender_es_un_interactivo(Elemento) :-
 procesar_clasificacion(_, cancelar) :-
     write('Aprendizaje cancelado.'),
     nl, !.
+
 procesar_clasificacion(Elemento, Categoria) :-
     aprender_es_un(Elemento, Categoria).
 
@@ -111,6 +116,7 @@ aprender_relacion_interactiva(A) :-
 procesar_relacion_intermedia(_, cancelar) :-
     write('Aprendizaje cancelado.'),
     nl, !.
+
 procesar_relacion_intermedia(A, Relacion) :-
     write('Digite el valor relacionado o escriba cancelar.'),
     nl,
@@ -120,6 +126,7 @@ procesar_relacion_intermedia(A, Relacion) :-
 procesar_relacion_final(_, _, cancelar) :-
     write('Aprendizaje cancelado.'),
     nl, !.
+
 procesar_relacion_final(A, Relacion, B) :-
     aprender_relacion(A, Relacion, B).
 
