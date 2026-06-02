@@ -34,11 +34,36 @@ responder(listar_definiciones) :-
     findall(X-D, concepto_total(X, D), L),
     mostrar_lista(L), !.
 
+responder(hermanos(X)) :-
+    respuesta_hermanos(X), !.
+
+responder(ancestros(X)) :-
+    respuesta_ancestros(X), !.
+
+responder(descendientes(X)) :-
+    respuesta_descendientes(X), !.
+
+responder(propiedades(X)) :-
+    respuesta_tiene_todo(X), !.
+
+responder(donde_vive(X)) :-
+    respuesta_donde_vive(X), !.
+
+responder(que_come(X)) :-
+    respuesta_que_come(X), !.
+
+responder(que_puede(X)) :-
+    respuesta_que_puede(X), !.
+
+responder(relaciones_de(X)) :-
+    respuesta_relaciones_de(X), !.
+
 responder(hola) :-
-    write('Hola. Puedes preguntarme, enseñarme o pedir definiciones.'), nl, !.
+    write('Hola. Puedes preguntarme, ensenarme o pedir definiciones.'), nl, !.
 
 responder(adios) :-
     write('Hasta luego.'), nl, !.
 
 responder(gracias) :-
     write('De nada.'), nl, !.
+

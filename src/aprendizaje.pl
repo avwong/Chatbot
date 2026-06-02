@@ -1,3 +1,5 @@
+:- multifile responder/1.
+
 % ---------------------------------
 % Verificaciones de conocimiento
 % ---------------------------------
