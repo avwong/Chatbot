@@ -13,6 +13,9 @@ existe_clasificacion(Elemento, Categoria) :-
 existe_relacion(A, Relacion, B) :-
     relacion_total(A, Relacion, B), !.
 
+existe_sinonimo(A, B) :-
+    sinonimo_total(A, B), !.
+
 % ---------------------------------
 % Mensaje base cuando no sabe algo
 % ---------------------------------
@@ -60,6 +63,17 @@ aprender_relacion(A, Relacion, B) :-
     write('Relacion aprendida correctamente.'),
     nl.
 
+aprender_sinonimo(A, B) :-
+    existe_sinonimo(A, B),
+    write('Ese sinonimo ya existe en la base de conocimiento.'),
+    nl, !.
+
+aprender_sinonimo(A, B) :-
+    assertz(aprendido_sinonimo(A, B)),
+    guardar_sinonimos,
+    write('Sinonimo aprendido correctamente.'),
+    nl.
+
 % ---------------------------------
 % Integracion con conversacion
 % ---------------------------------
@@ -72,6 +86,9 @@ responder(aprender_es_un(Elemento, Categoria)) :-
 
 responder(aprender_relacion(A, Relacion, B)) :-
     aprender_relacion(A, Relacion, B), !.
+
+responder(aprender_sinonimo(A, B)) :-
+    aprender_sinonimo(A, B), !.
 
 % ---------------------------------
 % Aprendizaje interactivo
