@@ -55,7 +55,7 @@ relacion(arroz, requiere, agua).
 relacion(arroz, requiere, sal).
 relacion(masa, requiere, harina).
 
-sinonimo(requiere, necesita)
+sinonimo(requiere, necesita).
 sinonimo(mario, super_mario).
 sinonimo(videojuego, juego).
 sinonimo(princesa_peach, peach).
