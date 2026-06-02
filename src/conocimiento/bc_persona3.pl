@@ -106,7 +106,7 @@ relacion(ariana_grande, tiene_cancion, seven_rings).
 relacion(the_weeknd, tiene_cancion, blinding_lights).
 relacion(the_weeknd, tiene_cancion, starboy).
 relacion(the_weeknd, tiene_cancion, save_your_tears).
-\
+
 relacion(taylor_swift, tiene_cancion, shake_it_off).
 relacion(taylor_swift, tiene_cancion, blank_space).
 
