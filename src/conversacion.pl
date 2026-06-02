@@ -44,6 +44,14 @@ normalizar_frase(Line, Term) :-
     ; phrase_defina(Clean, Term)
     ; phrase_explique(Clean, Term)
     ; phrase_para_que_sirve(Clean, Term)
+    ; phrase_hermanos(Clean, Term)
+    ; phrase_ancestros(Clean, Term)
+    ; phrase_descendientes(Clean, Term)
+    ; phrase_propiedades(Clean, Term)
+    ; phrase_donde_vive(Clean, Term)
+    ; phrase_que_come(Clean, Term)
+    ; phrase_que_puede(Clean, Term)
+    ; phrase_relaciones_de(Clean, Term)
     ; phrase_aprender(Clean, Term)
     ; phrase_listar(Clean, Term)
     ; phrase_salir(Clean, Term)
@@ -132,12 +140,19 @@ texto_a_atom(Text, Atom) :-
 
 quitar_articulo(Text, Result) :-
     normalize_space(string(Clean), Text),
-    split_string(Clean, ' ', ' ', Words),
-    ( Words = [First|Rest], member(First, ['el','la','los','las','un','una']) ->
-        atomic_list_concat(Rest, ' ', Clean1)
-    ; atomic_list_concat(Words, ' ', Clean1)
+    split_string(Clean, " ", " ", Words),
+    ( Words = [First|Rest], member(First, ["el","la","los","las","un","una"]) ->
+        atomics_to_text(Rest, ' ', Clean1)
+    ; atomics_to_text(Words, ' ', Clean1)
     ),
     normalize_space(string(Result), Clean1).
+
+atomics_to_text([], _, "").
+atomics_to_text([X], _, X).
+atomics_to_text([X|Xs], Sep, Result) :-
+    atomics_to_text(Xs, Sep, Rest),
+    string_concat(X, Sep, Temp),
+    string_concat(Temp, Rest, Result).
 
 remove_trailing_punctuation(Input, Output) :-
     ( sub_string(Input, 0, _, 1, P), member(P, ['?','.',',','!']) ->
@@ -145,3 +160,63 @@ remove_trailing_punctuation(Input, Output) :-
         remove_trailing_punctuation(Trimmed, Output)
     ; Output = Input
     ).
+
+% ---------------------------------
+% Frases para inferencias logicas
+% ---------------------------------
+
+phrase_hermanos(Clean, hermanos(X)) :-
+    ( atom_concat('hermanos de ', Rest, Clean)
+    ; atom_concat('hermano de ', Rest, Clean)
+    ),
+    quitar_articulo(Rest, Rest2),
+    texto_a_atom(Rest2, X).
+
+phrase_ancestros(Clean, ancestros(X)) :-
+    ( atom_concat('ancestros de ', Rest, Clean)
+    ; atom_concat('categorias de ', Rest, Clean)
+    ),
+    quitar_articulo(Rest, Rest2),
+    texto_a_atom(Rest2, X).
+
+phrase_descendientes(Clean, descendientes(X)) :-
+    ( atom_concat('descendientes de ', Rest, Clean)
+    ; atom_concat('tipos de ', Rest, Clean)
+    ),
+    quitar_articulo(Rest, Rest2),
+    texto_a_atom(Rest2, X).
+
+phrase_propiedades(Clean, propiedades(X)) :-
+    ( atom_concat('propiedades de ', Rest, Clean)
+    ; atom_concat('caracteristicas de ', Rest, Clean)
+    ),
+    quitar_articulo(Rest, Rest2),
+    texto_a_atom(Rest2, X).
+
+phrase_donde_vive(Clean, donde_vive(X)) :-
+    ( atom_concat('donde vive ', Rest, Clean)
+    ; atom_concat('donde vive el ', Rest, Clean)
+    ; atom_concat('donde vive la ', Rest, Clean)
+    ),
+    quitar_articulo(Rest, Rest2),
+    texto_a_atom(Rest2, X).
+
+phrase_que_come(Clean, que_come(X)) :-
+    ( atom_concat('que come ', Rest, Clean)
+    ; atom_concat('que come el ', Rest, Clean)
+    ; atom_concat('que come la ', Rest, Clean)
+    ),
+    quitar_articulo(Rest, Rest2),
+    texto_a_atom(Rest2, X).
+
+phrase_que_puede(Clean, que_puede(X)) :-
+    ( atom_concat('que puede ', Rest, Clean)
+    ; atom_concat('que puede hacer ', Rest, Clean)
+    ),
+    quitar_articulo(Rest, Rest2),
+    texto_a_atom(Rest2, X).
+
+phrase_relaciones_de(Clean, relaciones_de(X)) :-
+    atom_concat('relaciones de ', Rest, Clean),
+    quitar_articulo(Rest, Rest2),
+    texto_a_atom(Rest2, X).

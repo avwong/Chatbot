@@ -1,3 +1,8 @@
+:- multifile concepto/2.
+:- multifile es_un/2.
+:- multifile relacion/3.
+:- multifile sinonimo/2.
+
 :- dynamic concepto/2.
 :- dynamic es_un/2.
 :- dynamic relacion/3.
