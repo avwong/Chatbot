@@ -12,24 +12,6 @@ swipl main.pl
 - `inferencia.pl` — motor de razonamiento (herencia por jerarquía) y `responder/1`.
 - `nlp.pl` — convierte el texto en español del usuario en términos Prolog.
 - `data/` — conocimiento aprendido que persiste entre sesiones.
-
-## Integrantes
-
-
-Alfaro Alfaro Juan Jose	
-Araya Calvo	Mariangel
-Arce Campos	Daniel
-Bezara Perez Oscar Andres
-Blanco Mora	Maripaz	
-Elizondo Monge Gabriel
-Fallas Ruiz	Jose Ignacio
-Gonzalez Montero Maria Laura
-Jimenez Mora Fatima De Los Angeles
-Lacayo Picado Justin Geovany
-Montoya Sequeira Kendall Josue
-Morales Castro	Brandom Josue
-Navarro Quesada	Adrian
-Ortiz Acuña	Leonardo
 Ortiz Brenes Jose Felipe
 Otarola Ulate Carina
 Padilla Escalante Sebastian De Jesus
