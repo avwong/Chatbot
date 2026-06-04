@@ -4,10 +4,8 @@
 % Este archivo:
 %   1. Responde consultas a partir de la base de conocimiento.
 %   2. Maneja aprendizaje directo e interactivo.
-%   3. Canoniza términos (sin tildes, con '_' y en minúscula).
-%   4. Normaliza el conocimiento aprendido para evitar duplicados
-%      como pais / país.
-%
+
+
 % Depende de:
 %   - conocimiento.pl
 %   - main.pl
