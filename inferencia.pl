@@ -1,8 +1,6 @@
-% =========================================
-% inferencia.pl
-% =========================================
-% Motor de razonamiento y capa de respuestas.
-%
+% Inferencia: motor de razonamiento y respuestas
+
+
 % Este archivo:
 %   1. Responde consultas a partir de la base de conocimiento.
 %   2. Maneja aprendizaje directo e interactivo.
@@ -16,9 +14,7 @@
 
 :- dynamic normalizacion_ejecutada/0.
 
-% =========================================
-% REGLAS DE INFERENCIA
-% =========================================
+% Reglas de inferencia
 
 % Padre directo (un solo nivel, sin transitividad).
 padre_directo(X, Y) :- es_un(X, Y).
@@ -69,9 +65,7 @@ descendientes(X, Desc) :-
     findall(D, (es_un_total(D, X), D \== X), Lista),
     list_to_set(Lista, Desc).
 
-% =========================================
-% CANONIZACION Y NORMALIZACION
-% =========================================
+% Canonizacion y normalizacion
 
 canonizar_atomo(Entrada, Canonico) :-
     atom(Entrada), !,
@@ -123,9 +117,7 @@ canonico_si_existe(T0, R) :-
     R = R0.
 canonico_si_existe(T, T).
 
-% -----------------------------------------
 % Normalizacion del conocimiento aprendido
-% -----------------------------------------
 % Esto limpia duplicados tipo pais/país cargados desde
 % archivos viejos, y deja solo la versión canonizada.
 
@@ -198,9 +190,7 @@ canonizar_par_sinonimo(A-B, AC-BC) :-
     canonizar_atomo(A, AC),
     canonizar_atomo(B, BC).
 
-% =========================================
-% DIALOGO APOYADO POR SINONIMOS
-% =========================================
+% Dialogo apoyado por sinonimos
 
 dialogo_con_sinonimo(T, Respuesta) :-
     dialogo_total(T, Respuesta), !.
@@ -209,9 +199,7 @@ dialogo_con_sinonimo(T, Respuesta) :-
     R \== T,
     dialogo_total(R, Respuesta), !.
 
-% =========================================
-% responder/1
-% =========================================
+% responder/1: punto de entrada para responder consultas
 
 responder(Entrada) :-
     asegurar_normalizacion_inicial,
@@ -266,9 +254,7 @@ responder_interno(T) :-
     termino_conocido(T), !,
     resumen(T).
 
-% =========================================
-% RESPUESTAS CONCRETAS
-% =========================================
+% Respuestas concretas
 
 respuesta_definicion(Termino) :-
     concepto_con_sinonimo(Termino, Def),
@@ -420,9 +406,7 @@ resumen(Termino) :-
     ( respuesta_ancestros(Termino)     -> true ; true ),
     ( respuesta_relaciones_de(Termino) -> true ; true ).
 
-% =========================================
-% HELPERS DE PRESENTACION
-% =========================================
+% Helpers de presentacion
 
 mostrar_items([]).
 mostrar_items([X|R]) :-
@@ -444,9 +428,7 @@ mostrar_triples([A-R-B|Resto]) :-
     write('           - '), write(A), write(' '), write(R), write(' '), write(B), nl,
     mostrar_triples(Resto).
 
-% =========================================
-% APRENDIZAJE DIRECTO
-% =========================================
+% Aprendizaje directo
 
 aprender_es_un(Elemento0, Categoria0) :-
     canonizar_atomo(Elemento0, Elemento),
@@ -476,9 +458,7 @@ aprender_sinonimo(A0, B0) :-
     guardar_sinonimos,
     bot('Sinonimo aprendido correctamente.').
 
-% -----------------------------------------
 % Aprendizaje de relaciones genericas
-% -----------------------------------------
 
 aprender_relacion(A0, Relacion0, B0) :-
     asegurar_termino_conocido(A0),
@@ -504,9 +484,7 @@ aprender_relacion(A0, Relacion0, B0) :-
     guardar_aprendido,
     bot('Relacion aprendida correctamente.').
 
-% =========================================
-% APRENDIZAJE GUIADO RECURSIVO DE TERMINOS
-% =========================================
+% Aprendizaje guiado recursivo de terminos
 
 asegurar_termino_conocido(TerminoIn) :-
     canonizar_termino_inferencia(TerminoIn, Termino),

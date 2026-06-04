@@ -1,17 +1,10 @@
 
-%   1. Declaraciones (dynamic / discontiguous).
-%   2. Hechos estaticos.
-%   3. Capa de hechos aprendidos en tiempo de ejecucion.
-%   4. Predicados *_total que unifican lo estatico y lo aprendido, mas la resolucion de sinonimos.
-%   5. Persistencia del conocimiento aprendido a disco.
-%
-
-
-%   concepto(Termino, Definicion).
-%   es_un(Elemento, Categoria).        % jerarquia
-%   relacion(Sujeto, Relacion, Objeto).% relaciones genericas
-%   sinonimo(Canonico, Alias).
-%   dialogo(Frase, Respuesta).         % respuestas directas
+% Predicados base:
+%   concepto(Termino, Definicion)
+%   es_un(Elemento, Categoria)        - jerarquia
+%   relacion(Sujeto, Relacion, Objeto) - relaciones genericas
+%   sinonimo(Canonico, Alias)
+%   dialogo(Frase, Respuesta)          - respuestas directas
 
 % Declaraciones
 
@@ -32,7 +25,7 @@
 :- dynamic aprendido_sinonimo/2.
 :- dynamic aprendido_dialogo/2.
 
-% HECHOS ESTATICOS
+% Hechos estaticos
 
 % Conceptos base (ejemplo de lenguajes logicos)
 
@@ -469,7 +462,7 @@ sinonimo(tiburon, escualo).
 sinonimo(murcielago, quiroptero).
 
 
-% CAPA TOTAL: estatico + aprendido
+% Capa total: estatico + aprendido
 
 concepto_total(X, D) :- concepto(X, D).
 concepto_total(X, D) :- aprendido_concepto(X, D).
@@ -491,7 +484,7 @@ dialogo_total(I, R) :- dialogo(I, R).
 dialogo_total(I, R) :- aprendido_dialogo(I, R).
 
 
-% RESOLUCION DE SINONIMOS
+% Resolucion de sinonimos
 
 % equivalente/2: cadena de sinonimos (bidireccional y transitiva).
 equivalente(X, X).
@@ -526,7 +519,7 @@ es_un_con_sinonimo(A, B) :-
     es_un_total(RA, RB).
 
 
-% CONOCIMIENTO DE UN TERMINO
+% Conocimiento de un termino
 
 termino_conocido(T) :- dialogo_total(T, _), !.
 termino_conocido(T) :- concepto_total(T, _), !.
@@ -537,7 +530,7 @@ termino_conocido(T) :- relacion_total(_, _, T), !.
 termino_conocido(T) :- sinonimo_total(T, _), !.
 termino_conocido(T) :- sinonimo_total(_, T), !.
 
-% PERSISTENCIA
+% Persistencia
 % Cada vez que se aprende algo, se reescribe el archivo
 
 
