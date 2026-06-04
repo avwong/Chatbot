@@ -103,6 +103,7 @@ aprender_si_no_sabe(explique(T))       :- !, aprender_guiado(T).
 aprender_si_no_sabe(para_que_sirve(T)) :- !, aprender_guiado(T).
 aprender_si_no_sabe(tiene(T, _))       :- !, aprender_guiado(T).
 aprender_si_no_sabe(es_un(T, _))       :- !, aprender_guiado(T).
+aprender_si_no_sabe(de_donde_es(T))    :- !, aprender_guiado(T).
 aprender_si_no_sabe(T) :- atom(T), !, aprender_guiado(T).
 aprender_si_no_sabe(_) :-
     bot('No pude entender eso. Escriba una palabra para consultarla.').
