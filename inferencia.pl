@@ -365,12 +365,14 @@ respuesta_que_puede(X) :-
 
 respuesta_relaciones_de(X) :-
     resolver_termino(X, RX),
-    findall(R-Y, relacion_total(RX, R, Y), L0),
-    list_to_set(L0, Rels),
-    Rels \== [],
+    findall(R-Y, relacion_total(RX, R, Y), Directas0),
+    findall(tiene-P, tiene_propiedad(RX, P), Propiedades0),
+    append(Directas0, Propiedades0, Todas0),
+    list_to_set(Todas0, Relaciones),
+    Relaciones \== [],
     format(atom(H), 'Relaciones de ~w:', [X]),
     bot(H),
-    mostrar_relaciones(Rels).
+    mostrar_relaciones(Relaciones).
 
 respuesta_canciones_de(X) :-
     resolver_termino(X, RX),
