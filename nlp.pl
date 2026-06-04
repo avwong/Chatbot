@@ -11,9 +11,9 @@
 %   2. Interpretarla como una frase en espanol (patrones).
 
 parse_entrada(Linea, Termino) :-
-    catch(term_string(T, Linea), _, fail),
-    nonvar(T), !,
-    Termino = T.
+    catch(term_string(T0, Linea), _, fail),
+    nonvar(T0), !,
+    normalizar_termino_crudo(T0, Termino).
 parse_entrada(Linea, Termino) :-
     normalizar_frase(Linea, Termino), !.
 
@@ -75,6 +75,19 @@ reemplazar_caracter('Ú', 'u').
 reemplazar_caracter('ñ', 'n').
 reemplazar_caracter('Ñ', 'n').
 reemplazar_caracter(C, C).
+
+normalizar_termino_crudo(T0, T) :-
+    atom(T0), !,
+    termino_limpio(T0, T).
+
+normalizar_termino_crudo(T0, T) :-
+    compound(T0), !,
+    T0 =.. [F0 | Args0],
+    termino_limpio(F0, F),
+    maplist(normalizar_termino_crudo, Args0, Args),
+    T =.. [F | Args].
+
+normalizar_termino_crudo(T, T).
 
 % =========================================
 % Patrones de frase -> termino
@@ -289,7 +302,8 @@ phrase_cortesia('gracias', gracias).
 %     (ej: "el objeto prolog" -> prolog, "bad bunny" -> bad_bunny).
 
 termino_limpio(Texto, Termino) :-
-    quitar_puntuacion_final(Texto, Limpio),
+    quitar_puntuacion_final(Texto, Limpio0),
+    normalizar_ascii(Limpio0, Limpio),
     atomic_list_concat(Palabras0, ' ', Limpio),
     exclude(==(''), Palabras0, Palabras1),
     quitar_fillers(Palabras1, Palabras2),
