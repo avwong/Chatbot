@@ -14,4 +14,5 @@ aprendido_concepto(bien_gracias, 'Es una respuesta a la pregunta Como estas? de 
 
 aprendido_dialogo(te_gusta_el_aguacate, 'Bastante y a ti?').
 aprendido_dialogo(como_estas, 'Bien, y ud?').
+aprendido_dialogo(de_donde_es_ella, 'de donde es ariana grande?').
 

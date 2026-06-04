@@ -105,6 +105,8 @@ responder(de_donde_es(X))    :- respuesta_de_donde_es(X), !.
 responder(que_come(X))       :- respuesta_que_come(X), !.
 responder(que_puede(X))      :- respuesta_que_puede(X), !.
 responder(relaciones_de(X))  :- respuesta_relaciones_de(X), !.
+responder(canciones_de(X))   :- respuesta_canciones_de(X), !.
+responder(albumes_de(X))     :- respuesta_albumes_de(X), !.
 
 % --- Listados ---
 responder(listar_conceptos)  :- respuesta_listar_conceptos, !.
@@ -239,6 +241,22 @@ respuesta_relaciones_de(X) :-
     format(atom(H), 'Relaciones de ~w:', [X]),
     bot(H),
     mostrar_relaciones(Rels).
+
+respuesta_canciones_de(X) :-
+    resolver_termino(X, RX),
+    findall(C, relacion_total(RX, tiene_cancion, C), L0),
+    list_to_set(L0, Canciones), Canciones \== [],
+    format(atom(H), 'Canciones de ~w:', [X]),
+    bot(H),
+    mostrar_items(Canciones).
+
+respuesta_albumes_de(X) :-
+    resolver_termino(X, RX),
+    findall(A, relacion_total(RX, tiene_album, A), L0),
+    list_to_set(L0, Albumes), Albumes \== [],
+    format(atom(H), 'Albumes de ~w:', [X]),
+    bot(H),
+    mostrar_items(Albumes).
 
 % --- Listados globales ---
 respuesta_listar_conceptos :-
