@@ -9,6 +9,7 @@
 
 :- set_prolog_flag(encoding, utf8).
 
+:- ['util.pl'].
 :- ['conocimiento.pl'].
 :- ['inferencia.pl'].
 :- ['nlp.pl'].
@@ -96,38 +97,11 @@ preguntar(Pregunta, Termino, Texto) :-
     flush_output,
     leer_linea(Texto).
 
-canonizar_termino_main(TerminoIn, TerminoOut) :-
-    atom_string(TerminoIn, Texto),
-    split_string(Texto, " ", " \t\n\r.,;:!?¡¿", Partes0),
-    exclude(=(""), Partes0, Partes),
-    atomic_list_concat(Partes, '_', Atom0),
-    downcase_atom(Atom0, Lower),
-    normalizar_ascii_main(Lower, TerminoOut).
-
-normalizar_ascii_main(Atom, Out) :-
-    atom_chars(Atom, Chars),
-    maplist(reemplazar_caracter_main, Chars, Nuevos),
-    atom_chars(Out, Nuevos).
-
-reemplazar_caracter_main('á', 'a').
-reemplazar_caracter_main('é', 'e').
-reemplazar_caracter_main('í', 'i').
-reemplazar_caracter_main('ó', 'o').
-reemplazar_caracter_main('ú', 'u').
-reemplazar_caracter_main('Á', 'a').
-reemplazar_caracter_main('É', 'e').
-reemplazar_caracter_main('Í', 'i').
-reemplazar_caracter_main('Ó', 'o').
-reemplazar_caracter_main('Ú', 'u').
-reemplazar_caracter_main('ñ', 'n').
-reemplazar_caracter_main('Ñ', 'n').
-reemplazar_caracter_main(C, C).
-
 % Almacena lo aprendido segun lo que el usuario haya proporcionado.
 guardar_ensenanza(_, "", "") :- !,
     bot('No aprendí nada nuevo esta vez.').
 guardar_ensenanza(Termino, Respuesta, Definicion) :-
-    canonizar_termino_main(Termino, TerminoCanonico),
+    canonizar_termino(Termino, TerminoCanonico),
     aprender_respuesta(TerminoCanonico, Respuesta),
     aprender_definicion(TerminoCanonico, Definicion),
     guardar_aprendido,
@@ -138,18 +112,11 @@ aprender_respuesta(Termino, Respuesta) :-
     atom_string(RAtom, Respuesta),
     assertz(aprendido_dialogo(Termino, RAtom)).
 
+% aprender_definicion/2
 aprender_definicion(_, "") :- !.
 aprender_definicion(Termino, Definicion) :-
     atom_string(DAtom, Definicion),
     assertz(aprendido_concepto(Termino, DAtom)).
-
-% Lee una linea y la normaliza; end_of_file se trata como vacio.
-leer_linea(Texto) :-
-    read_line_to_string(user_input, Raw),
-    ( Raw == end_of_file ->
-        Texto = ""
-    ; normalize_space(string(Texto), Raw)
-    ).
 
 
 

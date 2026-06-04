@@ -4,7 +4,7 @@ El proyecto se organiza en cuatro archivos Prolog. `main.pl` carga el
 resto en orden y arranca el bucle automáticamente:
 
 ```
-conocimiento.pl  →  inferencia.pl  →  nlp.pl  →  main.pl
+util.pl  →  conocimiento.pl  →  inferencia.pl  →  nlp.pl  →  main.pl
 ```
 
 ## Punto de entrada (`main.pl`)
@@ -54,9 +54,9 @@ Texto crudo → [parse_entrada] → Término Prolog → [responder] → Salida
 | salir / adios / chao           | `salir`                   |
 | cualquier otra cosa            | átomo (ej. `bad_bunny`)   |
 
-`termino_limpio/2` quita artículos y cualificadores iniciales
-("el objeto prolog" → `prolog`) y une las palabras restantes con guion
-bajo ("bad bunny" → `bad_bunny`).
+`termino_limpio/2` y la capa de canonización en `util.pl` quitan artículos y cualificadores iniciales
+("el objeto prolog" → `prolog`) y unen las palabras restantes con guion
+bajo ("bad bunny" → `bad_bunny`), además de limpiar puntuación y acentos.
 
 ### Etapa 2 — `inferencia.pl`: `responder/1`
 

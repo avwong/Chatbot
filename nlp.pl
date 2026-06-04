@@ -12,10 +12,15 @@
 
 parse_entrada(Linea, Termino) :-
     catch(term_string(T0, Linea), _, fail),
-    nonvar(T0), !,
+    nonvar(T0),
+    es_termino_seguro(T0), !,
     normalizar_termino_crudo(T0, Termino).
 parse_entrada(Linea, Termino) :-
     normalizar_frase(Linea, Termino), !.
+
+es_termino_seguro(T) :-
+    functor(T, F, _),
+    \+ member(F, [halt, shell, asserta, assertz, retract, retractall, system, call, tell, told, open]).
 
 % Normalizacion: minusculas, sin signos de apertura, espacios colapsados -> atomo.
 
@@ -44,6 +49,7 @@ normalizar_frase(Linea, Termino) :-
     ; phrase_listar(Clean, Termino)
     ; phrase_salir(Clean, Termino)
     ; phrase_cortesia(Clean, Termino)
+    ; phrase_ayuda(Clean, Termino)
     ; texto_a_termino(Clean, Termino)
     ), !.
 
@@ -54,24 +60,7 @@ quitar_apertura(A, Out) :-
     ; Out = A
     ).
 
-normalizar_ascii(Atom, Out) :-
-    atom_chars(Atom, Chars),
-    maplist(reemplazar_caracter, Chars, Nuevos),
-    atom_chars(Out, Nuevos).
-
-reemplazar_caracter('á', 'a').
-reemplazar_caracter('é', 'e').
-reemplazar_caracter('í', 'i').
-reemplazar_caracter('ó', 'o').
-reemplazar_caracter('ú', 'u').
-reemplazar_caracter('Á', 'a').
-reemplazar_caracter('É', 'e').
-reemplazar_caracter('Í', 'i').
-reemplazar_caracter('Ó', 'o').
-reemplazar_caracter('Ú', 'u').
-reemplazar_caracter('ñ', 'n').
-reemplazar_caracter('Ñ', 'n').
-reemplazar_caracter(C, C).
+% normalizar_ascii/2 provisto por util.pl
 
 normalizar_termino_crudo(T0, T) :-
     atom(T0), !,
@@ -90,9 +79,10 @@ normalizar_termino_crudo(T, T).
 
 phrase_que_es(Clean, que_es(X)) :-
     ( atom_concat('que es ', Resto, Clean)
-    ; atom_concat('qué es ', Resto, Clean)
     ; atom_concat('quien es ', Resto, Clean)
-    ; atom_concat('quién es ', Resto, Clean)
+    ; atom_concat('que sabes de ', Resto, Clean)
+    ; atom_concat('cuentame de ', Resto, Clean)
+    ; atom_concat('dime sobre ', Resto, Clean)
     ),
     termino_limpio(Resto, X).
 
@@ -109,16 +99,14 @@ phrase_explique(Clean, explique(X)) :-
     termino_limpio(Resto, X).
 
 phrase_para_que_sirve(Clean, para_que_sirve(X)) :-
-    ( atom_concat('para que sirve ', Resto, Clean)
-    ; atom_concat('para qué sirve ', Resto, Clean)
-    ),
+    atom_concat('para que sirve ', Resto, Clean),
     termino_limpio(Resto, X).
 
 % "X tiene Y" -> tiene(X, Y)
 phrase_tiene(Clean, tiene(X, P)) :-
     sub_atom(Clean, Antes, _, _, ' tiene '),
     sub_atom(Clean, 0, Antes, _, Izq),
-    Despues is Antes + 7,
+    atom_length(' tiene ', L), Despues is Antes + L,
     sub_atom(Clean, Despues, _, 0, Der),
     termino_limpio(Izq, X),
     termino_limpio(Der, P).
@@ -132,7 +120,7 @@ phrase_aprender(Clean, aprender_sinonimo(A, B)) :-
     prefijo_aprender(Clean, Resto),
     sub_atom(Resto, Antes, _, _, ' significa '),
     sub_atom(Resto, 0, Antes, _, AText),
-    Inicio is Antes + 10,
+    atom_length(' significa ', L), Inicio is Antes + L,
     sub_atom(Resto, Inicio, _, 0, BText),
     termino_limpio(AText, A),
     termino_limpio(BText, B).
@@ -142,7 +130,7 @@ phrase_aprender(Clean, aprender_relacion(A, es_de, B)) :-
     prefijo_aprender(Clean, Resto),
     sub_atom(Resto, Antes, _, _, ' es de '),
     sub_atom(Resto, 0, Antes, _, AText),
-    Inicio is Antes + 7,
+    atom_length(' es de ', L), Inicio is Antes + L,
     sub_atom(Resto, Inicio, _, 0, BText),
     termino_limpio(AText, A),
     termino_limpio(BText, B).
@@ -151,7 +139,7 @@ phrase_aprender(Clean, aprender_relacion(A, vive_en, B)) :-
     prefijo_aprender(Clean, Resto),
     sub_atom(Resto, Antes, _, _, ' vive en '),
     sub_atom(Resto, 0, Antes, _, AText),
-    Inicio is Antes + 9,
+    atom_length(' vive en ', L), Inicio is Antes + L,
     sub_atom(Resto, Inicio, _, 0, BText),
     termino_limpio(AText, A),
     termino_limpio(BText, B).
@@ -177,7 +165,7 @@ phrase_aprender(Clean, aprender_es_un(A, B)) :-
     \+ sub_atom(Resto, _, _, _, ' vive en '),
     sub_atom(Resto, Antes, _, _, ' es '),
     sub_atom(Resto, 0, Antes, _, AText),
-    Inicio is Antes + 4,
+    atom_length(' es ', L), Inicio is Antes + L,
     sub_atom(Resto, Inicio, _, 0, BText),
     termino_limpio(AText, A),
     termino_limpio(BText, B).
@@ -209,7 +197,6 @@ phrase_hermanos(Clean, hermanos(X)) :-
 phrase_ancestros(Clean, ancestros(X)) :-
     ( atom_concat('ancestros de ', Resto, Clean)
     ; atom_concat('categorias de ', Resto, Clean)
-    ; atom_concat('categoría de ', Resto, Clean)
     ),
     termino_limpio(Resto, X).
 
@@ -222,21 +209,15 @@ phrase_descendientes(Clean, descendientes(X)) :-
 phrase_propiedades(Clean, propiedades(X)) :-
     ( atom_concat('propiedades de ', Resto, Clean)
     ; atom_concat('caracteristicas de ', Resto, Clean)
-    ; atom_concat('características de ', Resto, Clean)
     ),
     termino_limpio(Resto, X).
 
 phrase_donde_vive(Clean, donde_vive(X)) :-
-    ( atom_concat('donde vive ', Resto, Clean)
-    ; atom_concat('dónde vive ', Resto, Clean)
-    ),
+    atom_concat('donde vive ', Resto, Clean),
     termino_limpio(Resto, X).
 
 phrase_de_donde_es(Clean, de_donde_es(X)) :-
     atom_concat('de donde es ', Resto, Clean),
-    termino_limpio(Resto, X).
-phrase_de_donde_es(Clean, de_donde_es(X)) :-
-    atom_concat('de dónde es ', Resto, Clean),
     termino_limpio(Resto, X).
 
 phrase_que_come(Clean, que_come(X)) :-
@@ -262,7 +243,6 @@ phrase_canciones_de(Clean, canciones_de(X)) :-
 
 phrase_albumes_de(Clean, albumes_de(X)) :-
     ( atom_concat('albumes de ', Resto, Clean)
-    ; atom_concat('álbumes de ', Resto, Clean)
     ; atom_concat('discos de ', Resto, Clean)
     ),
     termino_limpio(Resto, X).
@@ -276,7 +256,6 @@ phrase_listar('lista sinonimos',   listar_sinonimos).
 
 phrase_salir('salir',       salir).
 phrase_salir('adios',       salir).
-phrase_salir('adiós',       salir).
 phrase_salir('hasta luego', salir).
 phrase_salir('chao',        salir).
 phrase_salir('bye',         salir).
@@ -284,6 +263,9 @@ phrase_salir('bye',         salir).
 phrase_cortesia('hola',    hola).
 phrase_cortesia('buenas',  hola).
 phrase_cortesia('gracias', gracias).
+
+phrase_ayuda('ayuda', ayuda).
+phrase_ayuda('help', ayuda).
 
 % Limpieza de terminos
 % Convierte un fragmento de texto en un atomo canonico:
@@ -306,7 +288,7 @@ termino_limpio(Texto, Termino) :-
 filler(el).   filler(la).  filler(los). filler(las).
 filler(un).   filler(una). filler(unos). filler(unas).
 filler(objeto). filler(concepto). filler(palabra).
-filler(termino). filler(término). filler(cosa).
+filler(termino). filler(cosa).
 
 quitar_fillers([P|Resto], Out) :- filler(P), !, quitar_fillers(Resto, Out).
 quitar_fillers(Palabras, Palabras).

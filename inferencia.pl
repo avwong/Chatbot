@@ -68,48 +68,10 @@ descendientes(X, Desc) :-
 % Canonizacion y normalizacion
 
 canonizar_atomo(Entrada, Canonico) :-
-    atom(Entrada), !,
-    atom_string(Entrada, Texto),
-    texto_libre_a_termino(Texto, Canonico).
-canonizar_atomo(Entrada, Canonico) :-
-    string(Entrada), !,
-    texto_libre_a_termino(Entrada, Canonico).
-canonizar_atomo(Entrada, Entrada).
-
-texto_libre_a_termino(Texto0, Termino) :-
-    ( atom(Texto0) ->
-        atom_string(Texto0, Texto)
-    ; string(Texto0) ->
-        Texto = Texto0
-    ; term_string(Texto0, Texto)
-    ),
-    split_string(Texto, " ", " \t\n\r.,;:!?¡¿", Partes0),
-    exclude(=(""), Partes0, Partes),
-    atomic_list_concat(Partes, '_', Atom0),
-    downcase_atom(Atom0, Lower),
-    normalizar_ascii_inferencia(Lower, Termino).
-
-normalizar_ascii_inferencia(Atom, Out) :-
-    atom_chars(Atom, Chars),
-    maplist(reemplazar_caracter_inferencia, Chars, Nuevos),
-    atom_chars(Out, Nuevos).
-
-reemplazar_caracter_inferencia('á', 'a').
-reemplazar_caracter_inferencia('é', 'e').
-reemplazar_caracter_inferencia('í', 'i').
-reemplazar_caracter_inferencia('ó', 'o').
-reemplazar_caracter_inferencia('ú', 'u').
-reemplazar_caracter_inferencia('Á', 'a').
-reemplazar_caracter_inferencia('É', 'e').
-reemplazar_caracter_inferencia('Í', 'i').
-reemplazar_caracter_inferencia('Ó', 'o').
-reemplazar_caracter_inferencia('Ú', 'u').
-reemplazar_caracter_inferencia('ñ', 'n').
-reemplazar_caracter_inferencia('Ñ', 'n').
-reemplazar_caracter_inferencia(C, C).
+    canonizar_termino(Entrada, Canonico).
 
 canonizar_termino_inferencia(TerminoIn, TerminoOut) :-
-    canonizar_atomo(TerminoIn, TerminoOut).
+    canonizar_termino(TerminoIn, TerminoOut).
 
 canonico_si_existe(T0, R) :-
     canonizar_atomo(T0, T),
@@ -239,6 +201,7 @@ responder_interno(aprender_sinonimo(A, B))    :- aprender_sinonimo(A, B), !.
 responder_interno(aprender_relacion(A, R, B)) :- aprender_relacion(A, R, B), !.
 
 % --- Cortesia ---
+responder_interno(ayuda)   :- respuesta_ayuda, !.
 responder_interno(hola)    :- bot('Hola. Puede preguntarme, ensenarme o pedir definiciones.'), !.
 responder_interno(gracias) :- bot('De nada, para eso estoy.'), !.
 
@@ -253,6 +216,12 @@ responder_interno(T) :-
     atom(T),
     termino_conocido(T), !,
     resumen(T).
+
+% --- Respuestas concretas ---
+
+respuesta_ayuda :-
+    dialogo_con_sinonimo(ayuda, Msg),
+    bot(Msg).
 
 % Respuestas concretas
 
@@ -431,28 +400,28 @@ mostrar_triples([A-R-B|Resto]) :-
 % Aprendizaje directo
 
 aprender_es_un(Elemento0, Categoria0) :-
-    canonizar_atomo(Elemento0, Elemento),
-    canonizar_atomo(Categoria0, Categoria),
+    canonizar_termino(Elemento0, Elemento),
+    canonizar_termino(Categoria0, Categoria),
+    aprender_es_un_canon(Elemento, Categoria).
+
+aprender_es_un_canon(Elemento, Categoria) :-
     es_un_total(Elemento, Categoria), !,
     bot('Esa clasificacion ya existe en la base de conocimiento.').
-
-aprender_es_un(Elemento0, Categoria0) :-
-    canonizar_atomo(Elemento0, Elemento),
-    canonizar_atomo(Categoria0, Categoria),
+aprender_es_un_canon(Elemento, Categoria) :-
     assertz(aprendido_es_un(Elemento, Categoria)),
     normalizar_aprendido,
     guardar_aprendido,
     bot('Clasificacion aprendida correctamente.').
 
 aprender_sinonimo(A0, B0) :-
-    canonizar_atomo(A0, A),
-    canonizar_atomo(B0, B),
+    canonizar_termino(A0, A),
+    canonizar_termino(B0, B),
+    aprender_sinonimo_canon(A, B).
+
+aprender_sinonimo_canon(A, B) :-
     sinonimo_total(A, B), !,
     bot('Ese sinonimo ya existe en la base de conocimiento.').
-
-aprender_sinonimo(A0, B0) :-
-    canonizar_atomo(A0, A),
-    canonizar_atomo(B0, B),
+aprender_sinonimo_canon(A, B) :-
     assertz(aprendido_sinonimo(A, B)),
     normalizar_aprendido,
     guardar_sinonimos,
@@ -463,22 +432,17 @@ aprender_sinonimo(A0, B0) :-
 aprender_relacion(A0, Relacion0, B0) :-
     asegurar_termino_conocido(A0),
     asegurar_termino_conocido(B0),
-    canonizar_atomo(A0, A1),
-    canonizar_atomo(Relacion0, Relacion),
-    canonizar_atomo(B0, B1),
+    canonizar_termino(A0, A1),
+    canonizar_termino(Relacion0, Relacion),
+    canonizar_termino(B0, B1),
     canonico_si_existe(A1, A),
     canonico_si_existe(B1, B),
+    aprender_relacion_canon(A, Relacion, B).
+
+aprender_relacion_canon(A, Relacion, B) :-
     relacion_total(A, Relacion, B), !,
     bot('Esa relacion ya existe en la base de conocimiento.').
-
-aprender_relacion(A0, Relacion0, B0) :-
-    asegurar_termino_conocido(A0),
-    asegurar_termino_conocido(B0),
-    canonizar_atomo(A0, A1),
-    canonizar_atomo(Relacion0, Relacion),
-    canonizar_atomo(B0, B1),
-    canonico_si_existe(A1, A),
-    canonico_si_existe(B1, B),
+aprender_relacion_canon(A, Relacion, B) :-
     assertz(aprendido_relacion(A, Relacion, B)),
     normalizar_aprendido,
     guardar_aprendido,
@@ -487,11 +451,15 @@ aprender_relacion(A0, Relacion0, B0) :-
 % Aprendizaje guiado recursivo de terminos
 
 asegurar_termino_conocido(TerminoIn) :-
-    canonizar_termino_inferencia(TerminoIn, Termino),
+    asegurar_termino_conocido(TerminoIn, 0).
+
+asegurar_termino_conocido(TerminoIn, _) :-
+    canonizar_termino(TerminoIn, Termino),
     termino_conocido(Termino), !.
 
-asegurar_termino_conocido(TerminoIn) :-
-    canonizar_termino_inferencia(TerminoIn, Termino),
+asegurar_termino_conocido(TerminoIn, Depth) :-
+    Depth < 3,
+    canonizar_termino(TerminoIn, Termino),
     format(atom(Msg), 'No conozco "~w". Voy a aprenderlo primero.', [Termino]),
     bot(Msg),
     preguntar_aprendizaje('¿Como debo responder cuando me digan', Termino, Respuesta),
@@ -499,18 +467,19 @@ asegurar_termino_conocido(TerminoIn) :-
     preguntar_aprendizaje('¿Cual es la categoria de', Termino, CategoriaTexto),
     aprender_dialogo_si_hay(Termino, Respuesta),
     aprender_concepto_si_hay(Termino, Definicion),
-    aprender_categoria_si_hay(Termino, CategoriaTexto),
+    NextDepth is Depth + 1,
+    aprender_categoria_si_hay(Termino, CategoriaTexto, NextDepth),
     normalizar_aprendido,
     guardar_aprendido.
+
+asegurar_termino_conocido(_, Depth) :-
+    Depth >= 3,
+    bot('Demasiada profundidad de aprendizaje interactivo, cancelando para evitar loop.'), !.
 
 preguntar_aprendizaje(Pregunta, Termino, Texto) :-
     format('Chatbot> ~w "~w"? (Enter para omitir): ', [Pregunta, Termino]),
     flush_output,
-    read_line_to_string(user_input, Raw),
-    ( Raw == end_of_file ->
-        Texto = ""
-    ; normalize_space(string(Texto), Raw)
-    ).
+    leer_linea(Texto).
 
 aprender_dialogo_si_hay(_, "") :- !.
 aprender_dialogo_si_hay(Termino0, Respuesta) :-
@@ -530,13 +499,13 @@ aprender_concepto_si_hay(Termino0, Definicion) :-
     ; assertz(aprendido_concepto(Termino, DefinicionAtom))
     ).
 
-aprender_categoria_si_hay(_, "") :- !.
-aprender_categoria_si_hay(Termino0, CategoriaTexto0) :-
-    canonizar_atomo(Termino0, Termino),
-    canonizar_atomo(CategoriaTexto0, CategoriaCanonica),
+aprender_categoria_si_hay(_, "", _) :- !.
+aprender_categoria_si_hay(Termino0, CategoriaTexto0, Depth) :-
+    canonizar_termino(Termino0, Termino),
+    canonizar_termino(CategoriaTexto0, CategoriaCanonica),
     ( CategoriaCanonica == Termino ->
         bot('La categoria no puede ser igual al termino.')
-    ; asegurar_termino_conocido(CategoriaCanonica),
+    ; asegurar_termino_conocido(CategoriaCanonica, Depth),
       canonico_si_existe(CategoriaCanonica, Categoria),
       ( es_un_total(Termino, Categoria) ->
           true

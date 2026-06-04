@@ -25,6 +25,18 @@
 :- dynamic aprendido_sinonimo/2.
 :- dynamic aprendido_dialogo/2.
 
+% Diálogos estáticos base
+dialogo(hola, 'Hola. Puede preguntarme, ensenarme o pedir definiciones.').
+dialogo(buenas, 'Hola. Puede preguntarme, ensenarme o pedir definiciones.').
+dialogo(gracias, 'De nada, para eso estoy.').
+dialogo(ayuda, 'Comandos disponibles:
+- que es X / defina X
+- X tiene Y
+- aprender que X es Y / aprender que X significa Y
+- aprender que X tiene Y
+- listar conceptos / listar relaciones / listar sinonimos
+- salir').
+
 % Hechos estaticos
 
 % Conceptos base (ejemplo de lenguajes logicos)
@@ -44,12 +56,12 @@ concepto(link, 'personaje principal de The Legend of Zelda').
 concepto(bowser, 'villano de mario').
 concepto(princesa_peach, 'princesa del Reino Champinon en videojuegos de Mario').
 concepto(pizza, 'comida italiana, que consiste de masa, tomate, queso y otros agregados').
-concepto(arroz, 'grano/lejumbre comestible, tradicional').
+concepto(arroz, 'grano/legumbre comestible, tradicional').
 concepto(masa, 'mezcla de harina, y agua, entre otros').
 concepto(salsa_tomate, 'salsa hecha con tomate').
-concepto(queso, 'producto hecho con leche, de sabor salado, y que se derrita/estira(aveces)').
+concepto(queso, 'producto hecho con leche, de sabor salado, y que se derrite/estira (a veces)').
 concepto(agua, 'liquido esencial para la vida, y recetas').
-concepto(sal, 'elemento, compuesto por NaCI y otros minerales, le da sabor a los alimentos').
+concepto(sal, 'elemento, compuesto por NaCl y otros minerales, le da sabor a los alimentos').
 concepto(horno, 'aparato de cocina, util para calentar o cocinar').
 concepto(harina, 'polvo de distintos cereales, como trigo, se usa para hacer masa').
 concepto(hamburguesa, 'comida, consiste de pan, una forma de carne, y agregados como queso, y vegetales').
@@ -115,8 +127,16 @@ concepto(cj, 'personaje principal de gta_san_andreas').
 concepto(trevor, 'uno de los protagonistas de gta_v').
 concepto(pikachu, 'pokemon electrico muy conocido').
 concepto(master_chief, 'protagonista principal de halo').
+concepto(halo, 'franquicia de videojuegos de disparos en primera persona').
+concepto(internet, 'red informatica mundial').
+concepto(trabajo_en_equipo, 'esfuerzo colaborativo de un grupo').
+concepto(punteria, 'habilidad para dar en el blanco').
+concepto(futbol, 'deporte de equipo jugado con un balon esferico').
+concepto(carreras, 'competicion de velocidad').
+concepto(crear_juegos, 'desarrollo de videojuegos').
 
 es_un(minecraft, videojuego).
+es_un(halo, videojuego).
 es_un(gta_v, videojuego).
 es_un(gta_san_andreas, videojuego).
 es_un(fortnite, videojuego).
@@ -141,7 +161,6 @@ relacion(gta_san_andreas, tiene, cj).
 relacion(gta_v, tiene, trevor).
 relacion(pokemon, tiene, pikachu).
 relacion(halo, tiene, master_chief).
-relacion(the_legend_of_zelda, tiene, link).
 relacion(fortnite, requiere, internet).
 relacion(among_us, requiere, trabajo_en_equipo).
 relacion(call_of_duty, requiere, punteria).
@@ -376,6 +395,10 @@ es_un(mariposa, insecto).
 es_un(hormiga, insecto).
 es_un(arana, aracnido).
 
+% Conceptos faltantes
+concepto(gallina, 'ave domestica que pone huevos').
+es_un(gallina, ave).
+
 % Propiedades (tiene) -- heredables por jerarquia
 relacion(animal, tiene, vida).
 relacion(mamifero, tiene, pelo).
@@ -467,12 +490,13 @@ sinonimo(murcielago, quiroptero).
 concepto_total(X, D) :- concepto(X, D).
 concepto_total(X, D) :- aprendido_concepto(X, D).
 
-es_un_total(X, Y) :- es_un(X, Y).
-es_un_total(X, Y) :- aprendido_es_un(X, Y).
-es_un_total(X, Y) :-
+es_un_total(X, Y) :- es_un_total(X, Y, [X]).
+es_un_total(X, Y, _) :- es_un(X, Y).
+es_un_total(X, Y, _) :- aprendido_es_un(X, Y).
+es_un_total(X, Y, Vis) :-
     ( es_un(X, Z) ; aprendido_es_un(X, Z) ),
-    Z \== X,
-    es_un_total(Z, Y).
+    \+ member(Z, Vis),
+    es_un_total(Z, Y, [Z|Vis]).
 
 relacion_total(X, R, Y) :- relacion(X, R, Y).
 relacion_total(X, R, Y) :- aprendido_relacion(X, R, Y).
@@ -487,13 +511,14 @@ dialogo_total(I, R) :- aprendido_dialogo(I, R).
 % Resolucion de sinonimos
 
 % equivalente/2: cadena de sinonimos (bidireccional y transitiva).
-equivalente(X, X).
-equivalente(X, Y) :- sinonimo_total(X, Y).
-equivalente(X, Y) :- sinonimo_total(Y, X).
-equivalente(X, Y) :-
+equivalente(X, Y) :- equivalente(X, Y, [X]).
+equivalente(X, X, _).
+equivalente(X, Y, _) :- sinonimo_total(X, Y).
+equivalente(X, Y, _) :- sinonimo_total(Y, X).
+equivalente(X, Y, Vis) :-
     sinonimo_total(X, Z),
-    Z \== X,
-    equivalente(Z, Y).
+    \+ member(Z, Vis),
+    equivalente(Z, Y, [Z|Vis]).
 
 % resolver_termino/2: encuentra el termino canonico con conocimiento.
 resolver_termino(T, T) :-
@@ -539,21 +564,25 @@ ruta_sinonimos('data/sinonimos_dinamicos.pl').
 
 guardar_aprendido :-
     ruta_aprendido(Ruta),
+    file_directory_name(Ruta, Dir),
+    make_directory_path(Dir),
     setup_call_cleanup(
-        tell(Ruta),
-        ( listing(aprendido_concepto/2),
-          listing(aprendido_es_un/2),
-          listing(aprendido_relacion/3),
-          listing(aprendido_dialogo/2)
+        open(Ruta, write, Stream),
+        ( with_output_to(Stream, listing(aprendido_concepto/2)),
+          with_output_to(Stream, listing(aprendido_es_un/2)),
+          with_output_to(Stream, listing(aprendido_relacion/3)),
+          with_output_to(Stream, listing(aprendido_dialogo/2))
         ),
-        told).
+        close(Stream)).
 
 guardar_sinonimos :-
     ruta_sinonimos(Ruta),
+    file_directory_name(Ruta, Dir),
+    make_directory_path(Dir),
     setup_call_cleanup(
-        tell(Ruta),
-        listing(aprendido_sinonimo/2),
-        told).
+        open(Ruta, write, Stream),
+        with_output_to(Stream, listing(aprendido_sinonimo/2)),
+        close(Stream)).
 
 guardar_todo :-
     guardar_aprendido,
