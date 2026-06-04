@@ -27,18 +27,20 @@ parse_entrada(Linea, Termino) :-
 normalizar_frase(Linea, Termino) :-
     string_lower(Linea, Lower),
     normalize_space(atom(Sin), Lower),
-    quitar_apertura(Sin, Clean),
+    quitar_apertura(Sin, Clean0),
+    normalizar_ascii(Clean0, Clean),
     ( phrase_que_es(Clean, Termino)
     ; phrase_defina(Clean, Termino)
     ; phrase_explique(Clean, Termino)
     ; phrase_para_que_sirve(Clean, Termino)
-    ; phrase_tiene(Clean, Termino)
     ; phrase_aprender(Clean, Termino)
+    ; phrase_tiene(Clean, Termino)
     ; phrase_hermanos(Clean, Termino)
     ; phrase_ancestros(Clean, Termino)
     ; phrase_descendientes(Clean, Termino)
     ; phrase_propiedades(Clean, Termino)
     ; phrase_donde_vive(Clean, Termino)
+    ; phrase_de_donde_es(Clean, Termino)
     ; phrase_que_come(Clean, Termino)
     ; phrase_que_puede(Clean, Termino)
     ; phrase_relaciones_de(Clean, Termino)
@@ -54,6 +56,25 @@ quitar_apertura(A, Out) :-
     ; atom_concat('¡', Resto, A) -> quitar_apertura(Resto, Out)
     ; Out = A
     ).
+
+normalizar_ascii(Atom, Out) :-
+    atom_chars(Atom, Chars),
+    maplist(reemplazar_caracter, Chars, Nuevos),
+    atom_chars(Out, Nuevos).
+
+reemplazar_caracter('á', 'a').
+reemplazar_caracter('é', 'e').
+reemplazar_caracter('í', 'i').
+reemplazar_caracter('ó', 'o').
+reemplazar_caracter('ú', 'u').
+reemplazar_caracter('Á', 'a').
+reemplazar_caracter('É', 'e').
+reemplazar_caracter('Í', 'i').
+reemplazar_caracter('Ó', 'o').
+reemplazar_caracter('Ú', 'u').
+reemplazar_caracter('ñ', 'n').
+reemplazar_caracter('Ñ', 'n').
+reemplazar_caracter(C, C).
 
 % =========================================
 % Patrones de frase -> termino
@@ -92,15 +113,13 @@ phrase_tiene(Clean, tiene(X, P)) :-
     termino_limpio(Izq, X),
     termino_limpio(Der, P).
 
-% "aprender que X es Y" / "aprender que X significa Y"
-phrase_aprender(Clean, aprender_es_un(A, B)) :-
-    prefijo_aprender(Clean, Resto),
-    sub_atom(Resto, Antes, _, _, ' es '),
-    sub_atom(Resto, 0, Antes, _, AText),
-    Inicio is Antes + 4,
-    sub_atom(Resto, Inicio, _, 0, BText),
-    termino_limpio(AText, A),
-    termino_limpio(BText, B).
+% =========================================
+% Aprendizaje desde lenguaje natural
+% =========================================
+% OJO:
+%   - "es de" debe interpretarse como relacion(es_de)
+%   - "es" solo como clasificacion si NO contiene "es de"
+
 phrase_aprender(Clean, aprender_sinonimo(A, B)) :-
     prefijo_aprender(Clean, Resto),
     sub_atom(Resto, Antes, _, _, ' significa '),
@@ -110,8 +129,68 @@ phrase_aprender(Clean, aprender_sinonimo(A, B)) :-
     termino_limpio(AText, A),
     termino_limpio(BText, B).
 
+% Casos especiales de relacion para evitar choque con "es"
+phrase_aprender(Clean, aprender_relacion(A, es_de, B)) :-
+    prefijo_aprender(Clean, Resto),
+    sub_atom(Resto, Antes, _, _, ' es de '),
+    sub_atom(Resto, 0, Antes, _, AText),
+    Inicio is Antes + 7,
+    sub_atom(Resto, Inicio, _, 0, BText),
+    termino_limpio(AText, A),
+    termino_limpio(BText, B).
+
+phrase_aprender(Clean, aprender_relacion(A, vive_en, B)) :-
+    prefijo_aprender(Clean, Resto),
+    sub_atom(Resto, Antes, _, _, ' vive en '),
+    sub_atom(Resto, 0, Antes, _, AText),
+    Inicio is Antes + 9,
+    sub_atom(Resto, Inicio, _, 0, BText),
+    termino_limpio(AText, A),
+    termino_limpio(BText, B).
+
+% Resto de relaciones genericas
+phrase_aprender(Clean, aprender_relacion(A, Rel, B)) :-
+    prefijo_aprender(Clean, Resto),
+    patron_relacion(Patron, Rel),
+    Rel \== es_de,
+    Rel \== vive_en,
+    sub_atom(Resto, Antes, _, _, Patron),
+    sub_atom(Resto, 0, Antes, _, AText),
+    atom_length(Patron, Largo),
+    Inicio is Antes + Largo,
+    sub_atom(Resto, Inicio, _, 0, BText),
+    termino_limpio(AText, A),
+    termino_limpio(BText, B).
+
+% Clasificacion: solo si NO contiene relaciones mas especificas
+phrase_aprender(Clean, aprender_es_un(A, B)) :-
+    prefijo_aprender(Clean, Resto),
+    \+ sub_atom(Resto, _, _, _, ' es de '),
+    \+ sub_atom(Resto, _, _, _, ' vive en '),
+    sub_atom(Resto, Antes, _, _, ' es '),
+    sub_atom(Resto, 0, Antes, _, AText),
+    Inicio is Antes + 4,
+    sub_atom(Resto, Inicio, _, 0, BText),
+    termino_limpio(AText, A),
+    termino_limpio(BText, B).
+
 prefijo_aprender(Clean, Resto) :- atom_concat('aprender que ', Resto, Clean).
 prefijo_aprender(Clean, Resto) :- atom_concat('aprende que ', Resto, Clean).
+
+patron_relacion(' tiene album ', tiene_album).
+patron_relacion(' tiene álbum ', tiene_album).
+patron_relacion(' tiene_album ', tiene_album).
+patron_relacion(' tiene cancion ', tiene_cancion).
+patron_relacion(' tiene canción ', tiene_cancion).
+patron_relacion(' tiene_cancion ', tiene_cancion).
+patron_relacion(' sirve para ', sirve_para).
+patron_relacion(' requiere ', requiere).
+patron_relacion(' permite ', permite).
+patron_relacion(' produce ', produce).
+patron_relacion(' simula ', simula).
+patron_relacion(' puede ', puede).
+patron_relacion(' come ', come).
+patron_relacion(' tiene ', tiene).
 
 phrase_hermanos(Clean, hermanos(X)) :-
     ( atom_concat('hermanos de ', Resto, Clean)
@@ -145,6 +224,13 @@ phrase_donde_vive(Clean, donde_vive(X)) :-
     ),
     termino_limpio(Resto, X).
 
+phrase_de_donde_es(Clean, de_donde_es(X)) :-
+    atom_concat('de donde es ', Resto, Clean),
+    termino_limpio(Resto, X).
+phrase_de_donde_es(Clean, de_donde_es(X)) :-
+    atom_concat('de dónde es ', Resto, Clean),
+    termino_limpio(Resto, X).
+
 phrase_que_come(Clean, que_come(X)) :-
     atom_concat('que come ', Resto, Clean),
     termino_limpio(Resto, X).
@@ -171,7 +257,7 @@ phrase_salir('adios',       salir).
 phrase_salir('adiós',       salir).
 phrase_salir('hasta luego', salir).
 phrase_salir('chao',        salir).
-phrase_salir('bye',        salir).
+phrase_salir('bye',         salir).
 
 phrase_cortesia('hola',    hola).
 phrase_cortesia('buenas',  hola).
