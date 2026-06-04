@@ -1,15 +1,11 @@
-% =========================================
-% main.pl
-% =========================================
-% Punto de entrada del Chatbot Inteligente Logico.
-%
+
+
 % Carga los modulos en orden, restaura el conocimiento
-% aprendido en sesiones anteriores y arranca el bucle de
-% conversacion.
+% aprendido en sesiones anteriores y arranca el bucle de conversacion.
 %
 % Ejecutar desde la raiz del proyecto:
 %   swipl main.pl
-%
+
 % Arquitectura:
 %   conocimiento.pl -> hechos + capa total + persistencia
 %   inferencia.pl   -> razonamiento + responder/1
@@ -26,26 +22,19 @@
 :- ( exists_file('data/aprendido.pl')           -> ['data/aprendido.pl']           ; true ).
 :- ( exists_file('data/sinonimos_dinamicos.pl') -> ['data/sinonimos_dinamicos.pl'] ; true ).
 
-% =========================================
 % Salida del chatbot
-% =========================================
 % Todas las respuestas se imprimen con el prefijo "Chatbot> ".
 
 bot(Texto) :-
     write('Chatbot> '), write(Texto), nl.
 
-% =========================================
 % Bucle de conversacion
-% =========================================
-% El "ciclo" es recursion pura: cada turno lee una linea,
-% la interpreta, responde y se vuelve a llamar.
+% El "ciclo" es recursion pura: cada turno lee una linea, la interpreta, responde y se vuelve a llamar.
 
 inicio :-
     nl,
-    writeln('==========================================='),
-    writeln('   Bienvenido al Chatbot Inteligente Lógico'),
+    writeln('   Bienvenido al Chatbot Inteligente Logico'),
     writeln('      (Escriba "salir" para finalizar)'),
-    writeln('==========================================='),
     nl,
     bucle.
 
@@ -80,13 +69,10 @@ ejecutar(Entrada) :-
 despedida :-
     bot('¡Hasta luego! Un placer conversar con usted.').
 
-% =========================================
 % Aprendizaje guiado
-% =========================================
-% Cuando responder/1 falla, el chatbot reconoce su
-% ignorancia y pide al usuario que le ensene. Distingue
-% dos tipos de conocimiento y los guarda por separado:
-%
+% Cuando responder/1 falla, el chatbot pide al usuario que le ensene. 
+% Distingue dos tipos de conocimiento y los guarda por separado:
+
 %   - respuesta : que contestar cuando le digan la frase
 %                 (aprendido_dialogo). Ej: "como estas"
 %                 -> "Bien y usted?".
@@ -94,8 +80,6 @@ despedida :-
 %                 (aprendido_concepto), consultable con
 %                 "que es / defina X". Ej: "como estas"
 %                 -> "Una manera de preguntar el bienestar".
-%
-% Cualquiera de los dos puede omitirse dejando la linea vacia.
 
 aprender_si_no_sabe(que_es(T))         :- !, aprender_guiado(T).
 aprender_si_no_sabe(defina(T))         :- !, aprender_guiado(T).
@@ -175,11 +159,6 @@ leer_linea(Texto) :-
     ; normalize_space(string(Texto), Raw)
     ).
 
-% =========================================
-% Arranque automatico
-% =========================================
-% Con el modo 'main', inicio se ejecuta como objetivo
-% principal tras la carga y el proceso termina al volver
-% (sin entrar al toplevel interactivo de SWI-Prolog).
+
 
 :- initialization(inicio, main).

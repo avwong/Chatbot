@@ -228,15 +228,17 @@ responder_interno(tiene(X, P))       :- respuesta_propiedad(X, P), !.
 responder_interno(es_un(A, B))       :- respuesta_es_un(A, B), !.
 
 % --- Consultas de jerarquia y relaciones ---
-responder_interno(hermanos(X))       :- respuesta_hermanos(X), !.
-responder_interno(ancestros(X))      :- respuesta_ancestros(X), !.
-responder_interno(descendientes(X))  :- respuesta_descendientes(X), !.
-responder_interno(propiedades(X))    :- respuesta_propiedades(X), !.
-responder_interno(donde_vive(X))     :- respuesta_donde_vive(X), !.
-responder_interno(de_donde_es(X))    :- respuesta_de_donde_es(X), !.
-responder_interno(que_come(X))       :- respuesta_que_come(X), !.
-responder_interno(que_puede(X))      :- respuesta_que_puede(X), !.
-responder_interno(relaciones_de(X))  :- respuesta_relaciones_de(X), !.
+responder_interno(hermanos(X))      :- respuesta_hermanos(X), !.
+responder_interno(ancestros(X))     :- respuesta_ancestros(X), !.
+responder_interno(descendientes(X)) :- respuesta_descendientes(X), !.
+responder_interno(propiedades(X))   :- respuesta_propiedades(X), !.
+responder_interno(donde_vive(X))    :- respuesta_donde_vive(X), !.
+responder_interno(de_donde_es(X))   :- respuesta_de_donde_es(X), !.
+responder_interno(que_come(X))      :- respuesta_que_come(X), !.
+responder_interno(que_puede(X))     :- respuesta_que_puede(X), !.
+responder_interno(relaciones_de(X)) :- respuesta_relaciones_de(X), !.
+responder_interno(canciones_de(X))  :- respuesta_canciones_de(X), !.
+responder_interno(albumes_de(X))    :- respuesta_albumes_de(X), !.
 
 % --- Listados ---
 responder_interno(listar_conceptos)  :- respuesta_listar_conceptos, !.
@@ -369,6 +371,22 @@ respuesta_relaciones_de(X) :-
     format(atom(H), 'Relaciones de ~w:', [X]),
     bot(H),
     mostrar_relaciones(Rels).
+
+respuesta_canciones_de(X) :-
+    resolver_termino(X, RX),
+    findall(C, relacion_total(RX, tiene_cancion, C), L0),
+    list_to_set(L0, Canciones), Canciones \== [],
+    format(atom(H), 'Canciones de ~w:', [X]),
+    bot(H),
+    mostrar_items(Canciones).
+
+respuesta_albumes_de(X) :-
+    resolver_termino(X, RX),
+    findall(A, relacion_total(RX, tiene_album, A), L0),
+    list_to_set(L0, Albumes), Albumes \== [],
+    format(atom(H), 'Albumes de ~w:', [X]),
+    bot(H),
+    mostrar_items(Albumes).
 
 % --- Listados globales ---
 respuesta_listar_conceptos :-

@@ -1,6 +1,4 @@
-% =========================================
-% nlp.pl
-% =========================================
+
 % Procesamiento de lenguaje natural (espanol).
 % Convierte el texto crudo del usuario en un termino
 % Prolog estructurado que inferencia.pl sabe responder.
@@ -44,6 +42,8 @@ normalizar_frase(Linea, Termino) :-
     ; phrase_que_come(Clean, Termino)
     ; phrase_que_puede(Clean, Termino)
     ; phrase_relaciones_de(Clean, Termino)
+    ; phrase_canciones_de(Clean, Termino)
+    ; phrase_albumes_de(Clean, Termino)
     ; phrase_listar(Clean, Termino)
     ; phrase_salir(Clean, Termino)
     ; phrase_cortesia(Clean, Termino)
@@ -96,6 +96,8 @@ normalizar_termino_crudo(T, T).
 phrase_que_es(Clean, que_es(X)) :-
     ( atom_concat('que es ', Resto, Clean)
     ; atom_concat('qué es ', Resto, Clean)
+    ; atom_concat('quien es ', Resto, Clean)
+    ; atom_concat('quién es ', Resto, Clean)
     ),
     termino_limpio(Resto, X).
 
@@ -256,6 +258,20 @@ phrase_que_puede(Clean, que_puede(X)) :-
 
 phrase_relaciones_de(Clean, relaciones_de(X)) :-
     atom_concat('relaciones de ', Resto, Clean),
+    termino_limpio(Resto, X).
+
+phrase_canciones_de(Clean, canciones_de(X)) :-
+    ( atom_concat('canciones de ', Resto, Clean)
+    ; atom_concat('canciones del ', Resto, Clean)
+    ; atom_concat('temas de ', Resto, Clean)
+    ),
+    termino_limpio(Resto, X).
+
+phrase_albumes_de(Clean, albumes_de(X)) :-
+    ( atom_concat('albumes de ', Resto, Clean)
+    ; atom_concat('álbumes de ', Resto, Clean)
+    ; atom_concat('discos de ', Resto, Clean)
+    ),
     termino_limpio(Resto, X).
 
 phrase_listar('listar conceptos',  listar_conceptos).

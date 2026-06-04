@@ -1,26 +1,19 @@
-% =========================================
-% conocimiento.pl
-% =========================================
-% Base de conocimiento del chatbot.
-%
-% Contiene:
+
 %   1. Declaraciones (dynamic / discontiguous).
-%   2. Hechos estaticos aportados por cada integrante.
+%   2. Hechos estaticos.
 %   3. Capa de hechos aprendidos en tiempo de ejecucion.
-%   4. Predicados *_total que unifican lo estatico y lo
-%      aprendido, mas la resolucion de sinonimos.
+%   4. Predicados *_total que unifican lo estatico y lo aprendido, mas la resolucion de sinonimos.
 %   5. Persistencia del conocimiento aprendido a disco.
 %
-% Convenciones:
+
+
 %   concepto(Termino, Definicion).
 %   es_un(Elemento, Categoria).        % jerarquia
 %   relacion(Sujeto, Relacion, Objeto).% relaciones genericas
 %   sinonimo(Canonico, Alias).
 %   dialogo(Frase, Respuesta).         % respuestas directas
 
-% -----------------------------------------
 % Declaraciones
-% -----------------------------------------
 
 :- discontiguous concepto/2.
 :- discontiguous es_un/2.
@@ -39,22 +32,16 @@
 :- dynamic aprendido_sinonimo/2.
 :- dynamic aprendido_dialogo/2.
 
-% =========================================
 % HECHOS ESTATICOS
-% =========================================
 
-% -----------------------------------------
 % Conceptos base (ejemplo de lenguajes logicos)
-% -----------------------------------------
 
 concepto(prolog, 'Lenguaje de programacion logica basado en clausulas de Horn.').
 relacion(prolog, sirve_para,
     'resolver problemas complejos mediante hechos y reglas sin definir algoritmos imperativos.').
 sinonimo(prolog, programacion_logica).
 
-% -----------------------------------------
-% Persona 1: Videojuegos y comida
-% -----------------------------------------
+% Videojuegos y comida
 
 concepto(videojuego, 'software para entretenimiento').
 concepto(juego, 'actividad para entretenerse').
@@ -116,9 +103,7 @@ sinonimo(videojuego, juego).
 sinonimo(princesa_peach, peach).
 sinonimo(zelda, legend_of_zelda).
 
-% -----------------------------------------
-% Persona 2: Videojuegos modernos
-% -----------------------------------------
+% Videojuegos modernos
 
 concepto(minecraft, 'videojuego de construccion y supervivencia con bloques').
 concepto(gta_v, 'videojuego de mundo abierto de la saga grand theft auto').
@@ -176,9 +161,7 @@ sinonimo(gta_san_andreas, san_andreas).
 sinonimo(call_of_duty, cod).
 sinonimo(fifa, ea_fc).
 
-% -----------------------------------------
-% Persona 3: Musica (generos, cantantes, albumes)
-% -----------------------------------------
+% Musica (generos, cantantes, albumes)
 
 % Generos
 concepto(pop, 'genero musical popular de ritmos pegajosos y letras accesibles').
@@ -301,9 +284,7 @@ sinonimo(taylor_swift, taylor).
 sinonimo(laufey, laufey_lin).
 sinonimo(ariana_grande, ari).
 
-% -----------------------------------------
-% Persona 4: Animales (taxonomia y propiedades)
-% -----------------------------------------
+% Animales
 
 % Categorias generales
 concepto(animal, 'ser vivo que se desplaza y se alimenta de sustancias organicas').
@@ -487,9 +468,8 @@ sinonimo(loro, perico).
 sinonimo(tiburon, escualo).
 sinonimo(murcielago, quiroptero).
 
-% =========================================
+
 % CAPA TOTAL: estatico + aprendido
-% =========================================
 
 concepto_total(X, D) :- concepto(X, D).
 concepto_total(X, D) :- aprendido_concepto(X, D).
@@ -510,9 +490,8 @@ sinonimo_total(X, Y) :- aprendido_sinonimo(X, Y).
 dialogo_total(I, R) :- dialogo(I, R).
 dialogo_total(I, R) :- aprendido_dialogo(I, R).
 
-% =========================================
+
 % RESOLUCION DE SINONIMOS
-% =========================================
 
 % equivalente/2: cadena de sinonimos (bidireccional y transitiva).
 equivalente(X, X).
@@ -546,12 +525,8 @@ es_un_con_sinonimo(A, B) :-
     resolver_termino(B, RB),
     es_un_total(RA, RB).
 
-% =========================================
+
 % CONOCIMIENTO DE UN TERMINO
-% =========================================
-% Un termino se considera conocido si aparece en cualquier
-% parte de la base (definicion, jerarquia, relacion, sinonimo
-% o dialogo aprendido).
 
 termino_conocido(T) :- dialogo_total(T, _), !.
 termino_conocido(T) :- concepto_total(T, _), !.
@@ -562,12 +537,9 @@ termino_conocido(T) :- relacion_total(_, _, T), !.
 termino_conocido(T) :- sinonimo_total(T, _), !.
 termino_conocido(T) :- sinonimo_total(_, T), !.
 
-% =========================================
 % PERSISTENCIA
-% =========================================
 % Cada vez que se aprende algo, se reescribe el archivo
-% correspondiente usando listing/1 (que tambien emite la
-% declaracion :- dynamic, permitiendo recargarlo al inicio).
+
 
 ruta_aprendido('data/aprendido.pl').
 ruta_sinonimos('data/sinonimos_dinamicos.pl').
