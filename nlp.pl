@@ -1,7 +1,7 @@
+% NLP: Natural Language Processing
 
-% Procesamiento de lenguaje natural (espanol).
-% Convierte el texto crudo del usuario en un termino
-% Prolog estructurado que inferencia.pl sabe responder.
+% Convierte el texto en terminos de prolog
+% Lo pasa a inferencia.pl
 %
 % Pipeline:
 %   "Que es Prolog?"  -> [parse_entrada] -> que_es(prolog)
@@ -17,10 +17,7 @@ parse_entrada(Linea, Termino) :-
 parse_entrada(Linea, Termino) :-
     normalizar_frase(Linea, Termino), !.
 
-% -----------------------------------------
-% Normalizacion: minusculas, sin signos de
-% apertura, espacios colapsados -> atomo.
-% -----------------------------------------
+% Normalizacion: minusculas, sin signos de apertura, espacios colapsados -> atomo.
 
 normalizar_frase(Linea, Termino) :-
     string_lower(Linea, Lower),
@@ -89,9 +86,7 @@ normalizar_termino_crudo(T0, T) :-
 
 normalizar_termino_crudo(T, T).
 
-% =========================================
 % Patrones de frase -> termino
-% =========================================
 
 phrase_que_es(Clean, que_es(X)) :-
     ( atom_concat('que es ', Resto, Clean)
@@ -128,9 +123,7 @@ phrase_tiene(Clean, tiene(X, P)) :-
     termino_limpio(Izq, X),
     termino_limpio(Der, P).
 
-% =========================================
 % Aprendizaje desde lenguaje natural
-% =========================================
 % OJO:
 %   - "es de" debe interpretarse como relacion(es_de)
 %   - "es" solo como clasificacion si NO contiene "es de"
@@ -292,9 +285,7 @@ phrase_cortesia('hola',    hola).
 phrase_cortesia('buenas',  hola).
 phrase_cortesia('gracias', gracias).
 
-% =========================================
 % Limpieza de terminos
-% =========================================
 % Convierte un fragmento de texto en un atomo canonico:
 %   - quita puntuacion final,
 %   - elimina articulos/cualificadores iniciales,

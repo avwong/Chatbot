@@ -1,9 +1,4 @@
-
-
-% Carga los modulos en orden, restaura el conocimiento
-% aprendido en sesiones anteriores y arranca el bucle de conversacion.
-%
-% Ejecutar desde la raiz del proyecto:
+% Ejecutar desde proyecto:
 %   swipl main.pl
 
 % Arquitectura:
@@ -22,19 +17,16 @@
 :- ( exists_file('data/aprendido.pl')           -> ['data/aprendido.pl']           ; true ).
 :- ( exists_file('data/sinonimos_dinamicos.pl') -> ['data/sinonimos_dinamicos.pl'] ; true ).
 
-% Salida del chatbot
-% Todas las respuestas se imprimen con el prefijo "Chatbot> ".
 
 bot(Texto) :-
     write('Chatbot> '), write(Texto), nl.
 
-% Bucle de conversacion
-% El "ciclo" es recursion pura: cada turno lee una linea, la interpreta, responde y se vuelve a llamar.
-
 inicio :-
     nl,
-    writeln('   Bienvenido al Chatbot Inteligente Logico'),
-    writeln('      (Escriba "salir" para finalizar)'),
+    writeln('      Bienvenido al Chatbot '),
+    writeln('        Made with Prolog '),
+    writeln('       con esperanza y fe '),
+    writeln(' [Escriba "salir" para finalizar]'),
     nl,
     bucle.
 
